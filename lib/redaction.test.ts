@@ -32,6 +32,17 @@ describe("redaction workflow", () => {
     expect(fixture.redactedText).not.toContain("$1: Demo Person");
   });
 
+  it("preserves account identifier namespaces in suggested replacements", () => {
+    const report = redactDemoText("Case: CASE-739204\nCustomer: CUST-928374\nAccount: ACCT-48392017");
+    const fixture = createFixtureExport(report, approveAllFindings(report.findings));
+
+    expect(fixture.redactedText).toContain("CASE-000000");
+    expect(fixture.redactedText).toContain("CUST-000000");
+    expect(fixture.redactedText).toContain("ACCT-000000");
+    expect(fixture.redactedText).not.toContain("CASE-739204");
+    expect(fixture.redactedText).not.toContain("CUST-928374");
+  });
+
   it("creates a reviewer packet with scenario metadata and unresolved risk", () => {
     const report = redactDemoText("Customer: Priya Shah\nEmail: priya@example.com\nAccount: ACCT-123456");
     const approvals = approveAllFindings(report.findings);

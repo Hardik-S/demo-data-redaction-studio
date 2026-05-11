@@ -83,8 +83,9 @@ const rules: Array<{
     kind: "account-id",
     label: "Account identifier",
     reason: "Operational account IDs can reveal customer or internal system references.",
-    pattern: /\b(?:ACCT|CUST|CASE)-\d{6,}\b/g,
-    replacement: "ACCT-000000"
+    pattern: /\b(ACCT|CUST|CASE)-\d{6,}\b/g,
+    // Keep the identifier namespace visible so reviewers can distinguish case, customer, and account references.
+    replacement: (match) => `${match[1]}-000000`
   },
   {
     kind: "person-name",
