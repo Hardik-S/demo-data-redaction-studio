@@ -26,7 +26,11 @@ Known caveat: `npm audit --omit=dev --audit-level=moderate` currently reports a 
 
 - Production alias: https://demo-data-redaction-studio.vercel.app
 - Vercel project: `demo-data-redaction-studio`
-- Expected smoke strings after deploy: `Demo Data Redaction Studio`, `Selected scenario: Customer support note`, `Needs review`, `Publication Decision`, and `deterministic-v1`.
+- Quality-pass app commit: `6fd69b433ac6e03b1b615702ad1321fa6bc9d16c`
+- Production deployment: https://demo-data-redaction-studio-jbabb6zrk-batb4016-9101s-projects.vercel.app
+- Inspect URL: https://vercel.com/batb4016-9101s-projects/demo-data-redaction-studio/4nZYGcgRqyD7fnA2WqecmWUgZGan
+- Verified smoke strings: `Demo Data Redaction Studio`, `Selected scenario: Customer support note`, `Needs review`, `Publication Decision`, and `deterministic-v1`.
+- Stale-artifact check: `$1: Demo Person` was absent from production after the deploy.
 
 ## Next Improvements
 

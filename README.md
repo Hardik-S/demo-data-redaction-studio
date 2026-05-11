@@ -57,7 +57,16 @@ npm run dev
 
 Production URL: https://demo-data-redaction-studio.vercel.app
 
-Deployment evidence should be updated after each Vercel production deploy with the deployed commit, deployment URL, inspect URL, and smoke strings. The current quality pass expects production to show `Selected scenario: Customer support note`, `Needs review`, `Publication Decision`, and `deterministic-v1`.
+Quality-pass deploy evidence:
+
+- App commit: `6fd69b433ac6e03b1b615702ad1321fa6bc9d16c`.
+- Production deployment: https://demo-data-redaction-studio-jbabb6zrk-batb4016-9101s-projects.vercel.app
+- Inspect URL: https://vercel.com/batb4016-9101s-projects/demo-data-redaction-studio/4nZYGcgRqyD7fnA2WqecmWUgZGan
+- Production alias: https://demo-data-redaction-studio.vercel.app
+- Verified at: 2026-05-11 03:38 America/Toronto.
+- Smoke evidence: HTTP `200`, found `Selected scenario: Customer support note`, `Needs review`, `Publication Decision`, and `deterministic-v1`; confirmed `$1: Demo Person` was absent.
+
+Deployment evidence should be updated after each Vercel production deploy with the deployed commit, deployment URL, inspect URL, and smoke strings.
 
 ## Handoff Files
 
