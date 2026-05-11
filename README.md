@@ -67,6 +67,15 @@ Quality-pass deploy evidence:
 - Verified at: 2026-05-11 03:38 America/Toronto.
 - Smoke evidence: HTTP `200`, found `Selected scenario: Customer support note`, `Needs review`, `Publication Decision`, and `deterministic-v1`; confirmed `$1: Demo Person` was absent.
 
+Second hardening deploy evidence:
+
+- App commit: `72b2dd5c306c2d1d862a357b9a3308d27e88f501`.
+- Production deployment: https://demo-data-redaction-studio-oz3rwzuur-batb4016-9101s-projects.vercel.app
+- Inspect URL: https://vercel.com/batb4016-9101s-projects/demo-data-redaction-studio/69Q6yqG9Ek9cfniyyxgSeVgBN2x4
+- Production alias: https://demo-data-redaction-studio.vercel.app
+- Verified at: 2026-05-11 08:53 America/Toronto.
+- Smoke evidence: HTTP `200`, found `Demo Data Redaction Studio`, `Paste source`, `Review needed`, `[CARD_REDACTED]`, `ACCT-[ID_REDACTED]`, `riskSummary`, and `deterministic-v1`.
+
 Deployment evidence should be updated after each Vercel production deploy with the deployed commit, deployment URL, inspect URL, and smoke strings.
 
 ## Handoff Files

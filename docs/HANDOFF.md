@@ -32,6 +32,10 @@ Known caveat: `npm audit --omit=dev --audit-level=moderate` currently reports a 
 - Inspect URL: https://vercel.com/batb4016-9101s-projects/demo-data-redaction-studio/4nZYGcgRqyD7fnA2WqecmWUgZGan
 - Verified smoke strings: `Demo Data Redaction Studio`, `Selected scenario: Customer support note`, `Needs review`, `Publication Decision`, and `deterministic-v1`.
 - Stale-artifact check: `$1: Demo Person` was absent from production after the deploy.
+- Second hardening app commit: `72b2dd5c306c2d1d862a357b9a3308d27e88f501`
+- Second hardening deployment: https://demo-data-redaction-studio-oz3rwzuur-batb4016-9101s-projects.vercel.app
+- Second hardening inspect URL: https://vercel.com/batb4016-9101s-projects/demo-data-redaction-studio/69Q6yqG9Ek9cfniyyxgSeVgBN2x4
+- Second hardening smoke strings: `Paste source`, `Review needed`, `[CARD_REDACTED]`, `ACCT-[ID_REDACTED]`, `riskSummary`, and `deterministic-v1`.
 
 ## Next Improvements
 
