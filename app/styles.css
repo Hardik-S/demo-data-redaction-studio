@@ -69,6 +69,29 @@ h2 {
   line-height: 1.6;
 }
 
+.heroActions,
+.scenarioRail,
+.packetStats {
+  display: grid;
+  gap: 10px;
+}
+
+.heroActions {
+  grid-template-columns: repeat(3, max-content);
+  margin-top: 18px;
+}
+
+.heroActions span,
+.status {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .scorecard,
 .panel {
   border: 1px solid var(--line);
@@ -92,6 +115,44 @@ h2 {
 .scorecard p {
   margin: 10px 0 0;
   color: var(--muted);
+}
+
+.scenarioRail {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0 0 16px;
+}
+
+.scenario {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+}
+
+.scenario.active {
+  border-color: rgba(15, 118, 110, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.2);
+}
+
+.scenario span {
+  display: block;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.scenario strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.2rem;
+}
+
+.scenario p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 .grid {
@@ -152,6 +213,30 @@ pre {
   line-height: 1.45;
 }
 
+.decision {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.status {
+  border-radius: 6px;
+  padding: 5px 8px;
+  white-space: nowrap;
+}
+
+.status.approved {
+  border-color: rgba(15, 118, 110, 0.28);
+  background: #e9f7f4;
+  color: var(--accent);
+}
+
+.status.review {
+  border-color: #f3d28a;
+  background: #fff8e6;
+  color: var(--gold);
+}
+
 code {
   align-self: start;
   border: 1px solid #f3d28a;
@@ -160,6 +245,46 @@ code {
   color: var(--gold);
   padding: 5px 8px;
   font: 0.78rem Consolas, "Courier New", monospace;
+}
+
+.reviewPacket {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.8fr);
+}
+
+.packetIntro {
+  padding: 16px;
+}
+
+.packetIntro p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.packetStats {
+  border-left: 1px solid var(--line);
+  padding: 16px;
+}
+
+.packetStats div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid var(--line);
+  padding: 9px 0;
+}
+
+.packetStats div:last-child {
+  border-bottom: 0;
+}
+
+.packetStats span {
+  color: var(--muted);
+}
+
+.packetStats strong {
+  text-align: right;
 }
 
 .export {
@@ -180,7 +305,13 @@ code {
 @media (max-width: 760px) {
   .hero,
   .grid,
+  .scenarioRail,
+  .reviewPacket,
   .export {
+    grid-template-columns: 1fr;
+  }
+
+  .heroActions {
     grid-template-columns: 1fr;
   }
 
@@ -189,9 +320,18 @@ code {
     border-bottom: 1px solid var(--line);
   }
 
+  .packetStats {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
   .finding,
   .panelHeader {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .decision {
+    justify-items: start;
   }
 }

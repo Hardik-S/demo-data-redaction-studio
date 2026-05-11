@@ -16,12 +16,47 @@ export type RedactionReport = {
   findings: RedactionFinding[];
 };
 
+export type FixtureExport = {
+  redactedText: string;
+  sourceRiskCount: number;
+  replacements: Array<{
+    kind: FindingKind;
+    originalLength: number;
+    replacement: string;
+    approved: boolean;
+  }>;
+  limitations: string[];
+};
+
+export type ReviewPacketOptions = {
+  reviewer: string;
+  reviewedAt: string;
+  scenarioName: string;
+};
+
+export type ReviewPacket = FixtureExport & {
+  scenarioName: string;
+  reviewer: string;
+  reviewedAt: string;
+  ruleVersion: "deterministic-v1";
+  approvedCount: number;
+  unresolvedRisks: string[];
+  reviewedFindings: Array<{
+    id: string;
+    kind: FindingKind;
+    label: string;
+    approved: boolean;
+    replacement: string;
+    originalLength: number;
+  }>;
+};
+
 const rules: Array<{
   kind: FindingKind;
   label: string;
   reason: string;
   pattern: RegExp;
-  replacement: string;
+  replacement: string | ((match: RegExpMatchArray) => string);
 }> = [
   {
     kind: "email",
@@ -55,8 +90,8 @@ const rules: Array<{
     kind: "person-name",
     label: "Named person",
     reason: "Names in source artifacts require human approval before demo publication.",
-    pattern: /\b(Customer|Owner|Patient|Applicant):\s*([A-Z][a-z]+(?:\s[A-Z][a-z]+)+)\b/g,
-    replacement: "$1: Demo Person"
+    pattern: /\b(Customer|Owner|Patient|Applicant):[ \t]*([A-Z][a-z]+(?:[ \t][A-Z][a-z]+)+)\b/g,
+    replacement: (match) => `${match[1]}: Demo Person`
   }
 ];
 
@@ -72,7 +107,7 @@ export function redactDemoText(text: string): RedactionReport {
         original: match[0],
         start,
         end: start + match[0].length,
-        defaultReplacement: rule.replacement
+        defaultReplacement: typeof rule.replacement === "function" ? rule.replacement(match) : rule.replacement
       };
     })
   );
@@ -85,7 +120,7 @@ export function approveAllFindings(findings: RedactionFinding[]): Record<string,
   return Object.fromEntries(findings.map((finding) => [finding.id, finding.defaultReplacement]));
 }
 
-export function createFixtureExport(report: RedactionReport, approvals: Record<string, string>) {
+export function createFixtureExport(report: RedactionReport, approvals: Record<string, string>): FixtureExport {
   let cursor = 0;
   let redactedText = "";
 
@@ -111,6 +146,37 @@ export function createFixtureExport(report: RedactionReport, approvals: Record<s
       "Human approval is required before treating exported fixtures as public-safe.",
       "This first slice does not upload, store, or send source data."
     ]
+  };
+}
+
+export function createReviewPacket(
+  report: RedactionReport,
+  approvals: Record<string, string>,
+  options: ReviewPacketOptions
+): ReviewPacket {
+  const fixture = createFixtureExport(report, approvals);
+  const approvedFindings = report.findings.filter((finding) => Boolean(approvals[finding.id]));
+  const unresolvedFindings = report.findings.filter((finding) => !approvals[finding.id]);
+
+  return {
+    scenarioName: options.scenarioName,
+    reviewer: options.reviewer,
+    reviewedAt: options.reviewedAt,
+    ruleVersion: "deterministic-v1",
+    approvedCount: approvedFindings.length,
+    unresolvedRisks: unresolvedFindings.map((finding) => finding.label),
+    redactedText: fixture.redactedText,
+    sourceRiskCount: fixture.sourceRiskCount,
+    replacements: fixture.replacements,
+    reviewedFindings: report.findings.map((finding) => ({
+      id: finding.id,
+      kind: finding.kind,
+      label: finding.label,
+      approved: Boolean(approvals[finding.id]),
+      replacement: approvals[finding.id] ?? finding.defaultReplacement,
+      originalLength: finding.original.length
+    })),
+    limitations: fixture.limitations
   };
 }
 

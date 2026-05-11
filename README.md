@@ -16,11 +16,18 @@ This project shows product judgment around privacy-aware demo preparation. It tu
 ## Local Setup
 
 ```powershell
-npm install
-npm run test
-npm run build
+npm ci
+npm run verify
 npm run dev
 ```
+
+## Reviewer Path
+
+1. Confirm the first viewport shows the selected synthetic scenario, approved count, and review-needed count.
+2. Compare the raw synthetic source with the approved fixture preview.
+3. Inspect the review queue: approved rows are replacement decisions, while held rows remain `Needs review`.
+4. Inspect the fixture export packet for `scenarioName`, `ruleVersion`, `reviewedAt`, `approvedCount`, and `unresolvedRisks`.
+5. Read `docs/fixture-provenance.md` before trusting the public-demo boundary.
 
 ## Decisions
 
@@ -28,18 +35,31 @@ npm run dev
 - Rules are deterministic and conservative: email, phone, card-like numbers, account identifiers, and labeled person names.
 - The UI separates raw private input, approved public output, and review queue so the human approval boundary is visible.
 - Replacement export stores original value length and replacement type, not the original value, because public fixtures should prove the action without leaking source text.
+- The rendered scenario intentionally leaves one finding in `Needs review` so reviewers can see that suggested replacements are not the same as final public approval.
 
 ## Redaction Limitations
 
 - Regex rules can miss context-specific secrets, unusual identifiers, screenshots, PDFs, or proprietary field names.
 - Card-like number detection is intentionally broad and should be reviewed before export.
 - Public-safe status is a workflow decision after human review, not an automatic guarantee.
+- Organization names, addresses, dates, unlabeled names, and unusual internal IDs remain expected misses in this slice.
 
 ## Verification
 
-- `npm run test` validates sensitive-field detection and approved fixture export.
-- `npm run build` validates the production Next.js bundle.
+| Command | Purpose |
+| --- | --- |
+| `npm run test -- --run` | Validates sensitive-field detection, named-person label preservation, fixture export, and review-packet metadata. |
+| `npm run typecheck` | Validates TypeScript contracts without incremental build residue. |
+| `npm run build` | Validates the production Next.js bundle with webpack. |
+| `npm run verify` | Runs the full local verification gate. |
 
 ## Deployment
 
-Expected production URL: https://demo-data-redaction-studio.vercel.app
+Production URL: https://demo-data-redaction-studio.vercel.app
+
+Deployment evidence should be updated after each Vercel production deploy with the deployed commit, deployment URL, inspect URL, and smoke strings. The current quality pass expects production to show `Selected scenario: Customer support note`, `Needs review`, `Publication Decision`, and `deterministic-v1`.
+
+## Handoff Files
+
+- `docs/fixture-provenance.md`: synthetic-value inventory and detector coverage.
+- `docs/HANDOFF.md`: reviewer path, verification contract, deploy expectations, and next improvements.

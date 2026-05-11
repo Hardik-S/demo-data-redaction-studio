@@ -2,3 +2,7 @@
 node_modules
 .vercel
 *.log
+.env*
+*.tsbuildinfo
+coverage
+playwright-report
