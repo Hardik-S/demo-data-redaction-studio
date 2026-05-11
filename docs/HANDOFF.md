@@ -2,14 +2,15 @@
 
 ## Scope
 
-This quality pass hardens `PPQ-2026-05-10-008` by fixing the named-person replacement bug, making the reviewer hold visible, adding review-packet metadata, adding CI/security headers, and documenting fixture provenance. It preserves the worker's deterministic public-demo shape and does not add file upload, persistence, live AI, or real data handling.
+This quality pass hardens `PPQ-2026-05-10-008` by fixing the named-person replacement bug, making the reviewer hold visible, adding review-packet metadata, adding CI/security headers, documenting fixture provenance, and making exported placeholders non-recursive. It preserves the worker's deterministic public-demo shape and does not add file upload, persistence, live AI, or real data handling.
 
 ## Reviewer Path
 
 1. Open the app and verify the first viewport shows `Customer support note`, approved count, and `1 needs review`.
 2. Inspect the review queue and confirm the card-like number is marked `Needs review` while the preview text still uses a suggested replacement.
-3. Inspect the export packet and confirm it includes `scenarioName`, `reviewedAt`, `ruleVersion`, `approvedCount`, `unresolvedRisks`, and no original email/person/account/card values.
-4. Read `docs/fixture-provenance.md` to confirm every displayed fixture value is synthetic or reserved.
+3. Inspect the export packet and confirm it includes `scenarioName`, `reviewedAt`, `ruleVersion`, `approvedCount`, `unresolvedRisks`, `riskSummary`, `rulesApplied`, and no original email/person/account/card values.
+4. Confirm exported placeholders use non-detectable tokens such as `[EMAIL_REDACTED]`, `[CARD_REDACTED]`, and `CASE-[ID_REDACTED]` rather than fake-but-pattern-matching values.
+5. Read `docs/fixture-provenance.md` to confirm every displayed fixture value is synthetic or reserved.
 
 ## Verification Contract
 

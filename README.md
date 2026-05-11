@@ -36,6 +36,7 @@ npm run dev
 - The UI separates raw private input, approved public output, and review queue so the human approval boundary is visible.
 - Replacement export stores original value length and replacement type, not the original value, because public fixtures should prove the action without leaking source text.
 - The rendered scenario intentionally leaves one finding in `Needs review` so reviewers can see that suggested replacements are not the same as final public approval.
+- Replacement placeholders such as `[EMAIL_REDACTED]`, `[CARD_REDACTED]`, `CASE-[ID_REDACTED]`, and `[PERSON_NAME_REDACTED]` are deliberately not re-detected by the same deterministic rules. That prevents exported fixtures from creating recursive redaction loops while preserving useful account/case/customer namespaces.
 
 ## Redaction Limitations
 
@@ -48,7 +49,7 @@ npm run dev
 
 | Command | Purpose |
 | --- | --- |
-| `npm run test -- --run` | Validates sensitive-field detection, named-person label preservation, fixture export, and review-packet metadata. |
+| `npm run test -- --run` | Validates sensitive-field detection, risk metadata, named-person label preservation, fixture export, non-recursive replacements, unresolved-review state, and review-packet metadata. |
 | `npm run typecheck` | Validates TypeScript contracts without incremental build residue. |
 | `npm run build` | Validates the production Next.js bundle with webpack. |
 | `npm run verify` | Runs the full local verification gate. |

@@ -77,7 +77,7 @@ h2 {
 }
 
 .heroActions {
-  grid-template-columns: repeat(3, max-content);
+  grid-template-columns: repeat(4, max-content);
   margin-top: 18px;
 }
 
@@ -180,6 +180,26 @@ h2 {
   color: var(--muted);
   font-size: 0.82rem;
   white-space: nowrap;
+}
+
+.context {
+  border-bottom: 1px solid var(--line);
+  padding: 14px 16px;
+}
+
+.context strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.context p,
+.finding small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.context p {
+  margin-bottom: 0;
 }
 
 pre {

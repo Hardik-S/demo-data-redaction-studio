@@ -4,6 +4,8 @@ const scenarios = [
   {
     name: "Customer support note",
     reviewer: "Portfolio reviewer",
+    releaseGoal: "Turn a messy support note into a public demo fixture for an escalation workflow.",
+    provenance: "Synthetic note manually authored for this portfolio demo; no copied customer artifact.",
     text: `Customer: Priya Shah
 Email: priya.shah@example.com
 Phone: 416-555-0198
@@ -15,6 +17,8 @@ Notes: Follow up with Northstar Demo Labs before Friday about the dashboard expo
   {
     name: "Health intake note",
     reviewer: "Demo privacy lead",
+    releaseGoal: "Show how regulated-looking intake data can become a safe public workflow sample.",
+    provenance: "Synthetic intake note; it is not medical, legal, clinical, or customer data.",
     text: `Patient: Arjun Patel
 Email: arjun.patel@example.com
 Phone: 647-555-0124
@@ -25,6 +29,8 @@ Notes: Replace the clinic reference with a neutral sample before recording the w
   {
     name: "Sales CRM export",
     reviewer: "Revenue ops reviewer",
+    releaseGoal: "Prepare a realistic renewal-demo record without leaking prospect contact details.",
+    provenance: "Synthetic CRM row with fake contact and account formats.",
     text: `Owner: Maya Chen
 Email: maya.chen@example.com
 Phone: 905-555-0183
@@ -61,6 +67,12 @@ export default function Home() {
             visible review holds, and an export packet reviewers can inspect.
           </p>
           <div className="heroActions" aria-label="Reviewer workflow status">
+            <span>Paste source</span>
+            <span>Detect risk</span>
+            <span>Review decisions</span>
+            <span>Export packet</span>
+          </div>
+          <div className="heroActions" aria-label="Selected scenario status">
             <span>Selected scenario: {selectedScenario.name}</span>
             <span>{packet.approvedCount} approved</span>
             <span>{packet.unresolvedRisks.length} needs review</span>
@@ -69,18 +81,22 @@ export default function Home() {
         <div className="scorecard" aria-label="Redaction summary">
           <span>{report.findings.length}</span>
           <p>sensitive fields detected before public demo use</p>
+          <strong>{packet.unresolvedRisks.length === 0 ? "Public-ready" : "Review needed"}</strong>
         </div>
       </section>
 
       <section className="scenarioRail" aria-label="Synthetic scenario presets">
         {scenarios.map((scenario) => {
           const scenarioReport = redactDemoText(scenario.text);
+          const highRiskCount = scenarioReport.findings.filter((finding) => finding.severity === "high").length;
 
           return (
             <article className={scenario.name === selectedScenario.name ? "scenario active" : "scenario"} key={scenario.name}>
               <span>{scenario.name}</span>
               <strong>{scenarioReport.findings.length} findings</strong>
-              <p>{scenario.holdBackKind} is intentionally held for manual review.</p>
+              <p>
+                {highRiskCount} high risk; {scenario.holdBackKind} is intentionally held for manual review.
+              </p>
             </article>
           );
         })}
@@ -91,6 +107,10 @@ export default function Home() {
           <div className="panelHeader">
             <h2>Raw Demo Source</h2>
             <span>private input</span>
+          </div>
+          <div className="context">
+            <strong>{selectedScenario.releaseGoal}</strong>
+            <p>{selectedScenario.provenance}</p>
           </div>
           <pre>{selectedScenario.text}</pre>
         </article>
@@ -115,6 +135,9 @@ export default function Home() {
               <div>
                 <strong>{finding.label}</strong>
                 <p>{finding.reason}</p>
+                <small>
+                  {finding.severity} severity / {finding.confidence} confidence / {finding.recommendedAction}
+                </small>
               </div>
               <div className="decision">
                 <span className={approvals[finding.id] ? "status approved" : "status review"}>
@@ -140,6 +163,14 @@ export default function Home() {
           <div>
             <span>Status</span>
             <strong>{packet.unresolvedRisks.length === 0 ? "Public-ready" : "Review needed"}</strong>
+          </div>
+          <div>
+            <span>High-risk findings</span>
+            <strong>{packet.riskSummary.high}</strong>
+          </div>
+          <div>
+            <span>Unresolved reviews</span>
+            <strong>{packet.riskSummary.unresolvedReviewCount}</strong>
           </div>
           <div>
             <span>Rule version</span>

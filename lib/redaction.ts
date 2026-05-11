@@ -1,10 +1,17 @@
 export type FindingKind = "email" | "phone" | "credit-card" | "account-id" | "person-name";
+export type RiskCategory = "identity" | "contact" | "payment" | "operational";
+export type RiskSeverity = "low" | "medium" | "high";
+export type FindingConfidence = "medium" | "high";
 
 export type RedactionFinding = {
   id: string;
   kind: FindingKind;
   label: string;
   reason: string;
+  category: RiskCategory;
+  severity: RiskSeverity;
+  confidence: FindingConfidence;
+  recommendedAction: string;
   original: string;
   start: number;
   end: number;
@@ -19,11 +26,22 @@ export type RedactionReport = {
 export type FixtureExport = {
   redactedText: string;
   sourceRiskCount: number;
+  riskSummary: {
+    high: number;
+    medium: number;
+    low: number;
+    unresolvedReviewCount: number;
+  };
+  rulesApplied: string[];
   replacements: Array<{
     kind: FindingKind;
+    label: string;
+    severity: RiskSeverity;
+    confidence: FindingConfidence;
     originalLength: number;
     replacement: string;
     approved: boolean;
+    decisionStatus: "approved" | "needs-review";
   }>;
   limitations: string[];
 };
@@ -45,6 +63,9 @@ export type ReviewPacket = FixtureExport & {
     id: string;
     kind: FindingKind;
     label: string;
+    severity: RiskSeverity;
+    confidence: FindingConfidence;
+    recommendedAction: string;
     approved: boolean;
     replacement: string;
     originalLength: number;
@@ -55,6 +76,10 @@ const rules: Array<{
   kind: FindingKind;
   label: string;
   reason: string;
+  category: RiskCategory;
+  severity: RiskSeverity;
+  confidence: FindingConfidence;
+  recommendedAction: string;
   pattern: RegExp;
   replacement: string | ((match: RegExpMatchArray) => string);
 }> = [
@@ -62,37 +87,57 @@ const rules: Array<{
     kind: "email",
     label: "Email address",
     reason: "Direct contact detail should not be included in a public fixture.",
+    category: "contact",
+    severity: "high",
+    confidence: "high",
+    recommendedAction: "Replace with a neutral placeholder before publishing.",
     pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,
-    replacement: "person@example.test"
+    replacement: "[EMAIL_REDACTED]"
   },
   {
     kind: "phone",
     label: "Phone number",
     reason: "Phone numbers are personal contact details and need explicit replacement.",
+    category: "contact",
+    severity: "high",
+    confidence: "high",
+    recommendedAction: "Replace with a neutral phone placeholder before publishing.",
     pattern: /\b(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)\d{3}[-.\s]?\d{4}\b/g,
-    replacement: "555-0100"
+    replacement: "[PHONE_REDACTED]"
   },
   {
     kind: "credit-card",
     label: "Card-like number",
     reason: "Payment identifiers must be replaced even in synthetic-looking snippets.",
+    category: "payment",
+    severity: "high",
+    confidence: "high",
+    recommendedAction: "Replace with a non-numeric placeholder and keep the source value out of exports.",
     pattern: /\b(?:\d[ -]*?){13,16}\b/g,
-    replacement: "4111 1111 1111 1111"
+    replacement: "[CARD_REDACTED]"
   },
   {
     kind: "account-id",
     label: "Account identifier",
     reason: "Operational account IDs can reveal customer or internal system references.",
     pattern: /\b(ACCT|CUST|CASE)-\d{6,}\b/g,
-    // Keep the identifier namespace visible so reviewers can distinguish case, customer, and account references.
-    replacement: (match) => `${match[1]}-000000`
+    category: "operational",
+    severity: "medium",
+    confidence: "high",
+    recommendedAction: "Replace with a neutral account placeholder that cannot be re-detected as an ID.",
+    // Keep the namespace visible without producing another ACCT/CUST/CASE numeric identifier.
+    replacement: (match) => `${match[1]}-[ID_REDACTED]`
   },
   {
     kind: "person-name",
     label: "Named person",
     reason: "Names in source artifacts require human approval before demo publication.",
+    category: "identity",
+    severity: "high",
+    confidence: "medium",
+    recommendedAction: "Replace with a named-person placeholder before publishing.",
     pattern: /\b(Customer|Owner|Patient|Applicant):[ \t]*([A-Z][a-z]+(?:[ \t][A-Z][a-z]+)+)\b/g,
-    replacement: (match) => `${match[1]}: Demo Person`
+    replacement: (match) => `${match[1]}: [PERSON_NAME_REDACTED]`
   }
 ];
 
@@ -105,6 +150,10 @@ export function redactDemoText(text: string): RedactionReport {
         kind: rule.kind,
         label: rule.label,
         reason: rule.reason,
+        category: rule.category,
+        severity: rule.severity,
+        confidence: rule.confidence,
+        recommendedAction: rule.recommendedAction,
         original: match[0],
         start,
         end: start + match[0].length,
@@ -133,19 +182,34 @@ export function createFixtureExport(report: RedactionReport, approvals: Record<s
 
   redactedText += report.originalText.slice(cursor);
 
+  const replacements = report.findings.map((finding) => ({
+    kind: finding.kind,
+    label: finding.label,
+    severity: finding.severity,
+    confidence: finding.confidence,
+    originalLength: finding.original.length,
+    replacement: approvals[finding.id] ?? finding.defaultReplacement,
+    approved: Boolean(approvals[finding.id]),
+    decisionStatus: Boolean(approvals[finding.id]) ? ("approved" as const) : ("needs-review" as const)
+  }));
+  const unresolvedReviewCount = replacements.filter((replacement) => replacement.decisionStatus === "needs-review").length;
+
   return {
     redactedText,
     sourceRiskCount: report.findings.length,
-    replacements: report.findings.map((finding) => ({
-      kind: finding.kind,
-      originalLength: finding.original.length,
-      replacement: approvals[finding.id] ?? finding.defaultReplacement,
-      approved: Boolean(approvals[finding.id])
-    })),
+    riskSummary: {
+      high: report.findings.filter((finding) => finding.severity === "high").length,
+      medium: report.findings.filter((finding) => finding.severity === "medium").length,
+      low: report.findings.filter((finding) => finding.severity === "low").length,
+      unresolvedReviewCount
+    },
+    rulesApplied: [...new Set(report.findings.map((finding) => finding.label))],
+    replacements,
     limitations: [
       "Rules are deterministic and intentionally conservative.",
       "Human approval is required before treating exported fixtures as public-safe.",
-      "This first slice does not upload, store, or send source data."
+      "This first slice does not upload, store, or send source data.",
+      "Replacement placeholders are intentionally non-detectable by the same rules to avoid recursive redaction loops."
     ]
   };
 }
@@ -168,11 +232,16 @@ export function createReviewPacket(
     unresolvedRisks: unresolvedFindings.map((finding) => finding.label),
     redactedText: fixture.redactedText,
     sourceRiskCount: fixture.sourceRiskCount,
+    riskSummary: fixture.riskSummary,
+    rulesApplied: fixture.rulesApplied,
     replacements: fixture.replacements,
     reviewedFindings: report.findings.map((finding) => ({
       id: finding.id,
       kind: finding.kind,
       label: finding.label,
+      severity: finding.severity,
+      confidence: finding.confidence,
+      recommendedAction: finding.recommendedAction,
       approved: Boolean(approvals[finding.id]),
       replacement: approvals[finding.id] ?? finding.defaultReplacement,
       originalLength: finding.original.length
@@ -185,7 +254,10 @@ function removeContainedFindings(findings: RedactionFinding[]) {
   return findings.filter((candidate, index) => {
     return !findings.some((other, otherIndex) => {
       if (index === otherIndex) return false;
-      return other.start <= candidate.start && other.end >= candidate.end && other.kind !== candidate.kind;
+      const strictlyContains =
+        (other.start < candidate.start && other.end >= candidate.end) ||
+        (other.start <= candidate.start && other.end > candidate.end);
+      return strictlyContains && other.kind !== candidate.kind;
     });
   });
 }

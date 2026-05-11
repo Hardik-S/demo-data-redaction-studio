@@ -30,6 +30,18 @@ The first rendered scenario is `Customer support note`.
 | Account identifier | `ACCT-*`, `CUST-*`, and `CASE-*` IDs with six or more digits. | Internal IDs with different prefixes. | Low to medium depending on source system naming. |
 | Named person | Labeled `Customer`, `Owner`, `Patient`, or `Applicant` names. | Unlabeled names, organizations, addresses, dates, and project names. | Medium; human review remains required. |
 
+## Export Placeholder Policy
+
+Exported replacements use bracketed placeholders instead of fake-but-valid values:
+
+- `[EMAIL_REDACTED]`
+- `[PHONE_REDACTED]`
+- `[CARD_REDACTED]`
+- `ACCT-[ID_REDACTED]`, `CUST-[ID_REDACTED]`, or `CASE-[ID_REDACTED]`
+- `[PERSON_NAME_REDACTED]`
+
+This is intentional. A previous fake-value approach kept realistic shapes such as test emails, card numbers, and account IDs in the exported fixture. Those values were useful visually, but they could be re-detected by the same rules and blur the boundary between reviewed public output and detector input. The current placeholder policy makes the export idempotent: running the detector over an approved fixture should not produce another finding. Account-like replacements preserve the namespace prefix so reviewers can still distinguish account, customer, and case references without retaining numeric identifiers.
+
 ## Non-Goals
 
 - No guarantee that arbitrary pasted data is public-safe.
